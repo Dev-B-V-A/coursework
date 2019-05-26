@@ -6,10 +6,16 @@
 const int variables_count = 3;
 const int functions_count = 4;
 
+const int mask_x1 = 1;
+const int mask_x2 = 2;
+const int mask_x3 = 4;
+const int mask_x4 = 8;
+
 int read_file (const char *filename, int *values, int count);
 void print_values (const int *values, int count, int columns = 4);
 void make_polynom (int *values, int *polynoms, int count);
-
+void product_polynoms (int *p1, int *p2, int *res, int *table, int count);
+void product_all_polynoms (int *polynoms, int *res, int count);
 
 int main (int argc, char **argv)
 {
@@ -20,13 +26,24 @@ int main (int argc, char **argv)
 
     read_file (filename, values, values_count);
 
+    printf ("Functions values:\n");
     print_values(values, values_count);
 
     int polynom[values_count];
 
     make_polynom(values, polynom, function_values_count);
 
+    printf ("Polynoms:\n");
     print_values(polynom, values_count, function_values_count);
+
+    printf ("Product:\n");
+    int res[function_values_count];
+    for (int i = 0; i < function_values_count; i++)
+        res[i] = 0;
+    product_polynoms(polynom, polynom + function_values_count, res, function_values_count);
+
+    print_values(res, function_values_count, 1);
+
     return 0;
 }
 
@@ -74,4 +91,25 @@ void make_polynom(int *values, int *polynoms, int count)
                 values[fun_num + functions_count * j] = (values[fun_num + functions_count * j] + values[fun_num + functions_count * (j + 1)]) % 2;
         }
     }
+}
+
+void product_polynoms (int *p1, int *p2, int *res, int count)
+{
+    for (int i = 0; i < count; i++)
+    {
+      if (p1[i] == 1)
+      {
+          for (int j = 0; j < count; j++)
+              if (p2[j] == 1)
+              {
+                  int value = i | j;
+                  res[value] = 1;
+              }
+      }
+    }
+}
+
+void product_all_polynoms (int *polynoms, int *res, int count)
+{
+
 }
