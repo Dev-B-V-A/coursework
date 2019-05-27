@@ -81,6 +81,22 @@ void print_values (const int *values, int count, int columns)
         if (i % columns == 0)
             printf ("\n");
     }
+    for (int i = 1; i < count; i++)
+    {
+        int index = i - 1;
+        if (values[index] == 1)
+        {
+            if (index == 0)       printf ("1");
+            if (index & mask_x1)  printf ("x1");
+            if (index & mask_x2)  printf ("x2");
+            if (index & mask_x3)  printf ("x3");
+            if (index & mask_x4)  printf ("x4");
+
+            printf ("+");
+        }
+        if (i % columns == 0)
+            printf ("\n");
+    }
 }
 
 void make_polynom(int *values, int *polynoms, int count)
@@ -147,11 +163,18 @@ int check_polynoms (int *polynoms, int *products, int products_count, int count)
     for (int index = 0; index < functions_count; index++)
         if (polynoms[index * count + 1 << (functions_count - index)] == 1)
         {
-            printf ("function is not finy f[%d]", index);
+            printf ("function is not fine f[%d]", index);
             return -1;
         }
     int product_index = 0;
     for (int i = 0; i < functions_count; i++)
         for (int j = i + 1; j < functions_count; j++)
-            if (products[product_index * count + ])
+        {
+            if (products[product_index * count + 1 << i + 1 << j] == 1)
+            {
+                printf ("Function f_i * f_j is not fine f[%d,%d]", i, j);
+                return -2;
+            }
+            product_index++;
+        }
 }
