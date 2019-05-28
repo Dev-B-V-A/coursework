@@ -1,9 +1,10 @@
 #include "stdio.h"
 #include "stdlib.h"
+#include "string.h"
 
 #define DEBUG 1
 
-const int variables_count = 3;
+const int variables_count = 4;
 const int functions_count = 4;
 const int function_prod_count = 11;
 
@@ -25,12 +26,15 @@ void product_all_polynoms(int *polynoms, int *res, int count);
 
 int check_polynoms(int *polynoms, int *products, int count);
 
+double compute_nonlinear(int *func_values, int count);
+
 int main(int argc, char **argv) {
   const char *filename = "input.txt";
   int function_values_count = (1 << variables_count);
   int all_input_values_count = function_values_count * functions_count;
 
   int values[all_input_values_count];
+  memset(values, all_input_values_count, 0);
 
   read_file(filename, values, all_input_values_count);
 
@@ -38,7 +42,10 @@ int main(int argc, char **argv) {
   print_values(values, all_input_values_count);
 
   int functions_polynoms[all_input_values_count];
-  make_polynom(values, functions_polynoms, function_values_count);
+  int copy_values[all_input_values_count];
+  memcpy(copy_values, values, all_input_values_count * sizeof(int));
+
+  make_polynom(copy_values, functions_polynoms, function_values_count);
 
   printf("Functions polynoms:\n");
   print_values(functions_polynoms, all_input_values_count,
@@ -61,6 +68,13 @@ int main(int argc, char **argv) {
   printf("Check polynoms\n");
   check_polynoms(functions_polynoms, all_products_polynoms,
                  function_values_count);
+
+  printf("NonLinear:\n");
+  for (int f_num = 0; f_num < functions_count; f_num++) {
+    double nonlinear = compute_nonlinear(values + f_num * function_values_count,
+                                         function_values_count);
+    printf("Function %d nonlinear = %f\n", f_num, nonlinear);
+  }
 
   return 0;
 }
@@ -98,15 +112,10 @@ void print_values(const int *values, int count, int columns,
       if (values[index] == 1) {
         if (index == 0)
           printf("1");
-        if (index & mask_x1)
-          printf("x1");
-        if (index & mask_x2)
-          printf("x2");
-        if (index & mask_x3)
-          printf("x3");
-        //      if (index & mask_x4)
-        //        printf("x4");
-
+        for (int var = 0; var < variables_count; var++) {
+          if (index & (1 << var))
+            printf("x%d", var + 1);
+        }
         printf(" + ");
       }
       if (i % columns == 0)
@@ -141,6 +150,7 @@ void product_polynoms(int *p1, int *p2, int *res, int count) {
 }
 
 void product_all_polynoms(int *polynoms, int *res, int count) {
+
   int all_mult = 0;
 
   for (int i = 0; i < functions_count; i++) {
@@ -213,4 +223,31 @@ int check_polynoms(int *polynoms, int *products, int count) {
   }
 
   return 0;
+}
+
+int w(int *func_values, int value, int count);
+
+int w(int *func_values, int value, int count) {
+  int sum = 0;
+  for (int u = 0; u < count; u++) {
+    int product = u & value;
+    int scalar_product = 0;
+    for (int index = 0; index < variables_count; index++)
+      scalar_product =
+          (scalar_product + ((product & (1 << index)) >> index)) % 2;
+
+    int exp_index = (scalar_product + func_values[u]) % 2;
+    sum += exp_index == 0 ? 1 : -1;
+  }
+  return sum;
+}
+
+double compute_nonlinear(int *func_values, int count) {
+  int max = 0;
+  for (int index = 0; index < count; index++) {
+    int value = abs(w(func_values, index, count));
+    if (value > max)
+      max = value;
+  }
+  return 8 - 0.5 * max;
 }
