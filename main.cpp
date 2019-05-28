@@ -8,15 +8,15 @@ const int variables_count = 4;
 const int functions_count = 4;
 const int function_prod_count = 11;
 
-const int mask_x1 = 1;
-const int mask_x2 = 2;
-const int mask_x3 = 4;
-const int mask_x4 = 8;
+const int mask_x1 = 8;
+const int mask_x2 = 4;
+const int mask_x3 = 2;
+const int mask_x4 = 1;
 
 int read_file(const char *filename, int *values, int count);
 
 void print_values(const int *values, int count, int columns = 4,
-                  bool print_polynom = false);
+                  bool print_polynom = true);
 
 void make_polynom(int *values, int *polynoms, int count);
 
@@ -114,12 +114,13 @@ void print_values(const int *values, int count, int columns,
           printf("1");
         for (int var = 0; var < variables_count; var++) {
           if (index & (1 << var))
-            printf("x%d", var + 1);
+            printf("x%d", variables_count - var);
         }
         printf(" + ");
       }
       if (i % columns == 0)
         printf("\n");
+      
     }
   }
 }
@@ -143,7 +144,7 @@ void product_polynoms(int *p1, int *p2, int *res, int count) {
       for (int j = 0; j < count; j++)
         if (p2[j] == 1) {
           int value = i | j;
-          res[value] = 1;
+          res[value] = res[value] == 0 ? 1 : 0;
         }
     }
   }
@@ -184,7 +185,7 @@ int check_polynoms(int *polynoms, int *products, int count) {
   for (int num = 0; num < functions_count; num++)
     for (int index = 0; index < count; index++)
       if (polynoms[num * count + index] == 1 && (index & (1 << num))) {
-        printf("function is not fine f[%d]\n", index);
+        printf("function is not fine f[%d], index = %d\n", num, index);
         return -1;
       }
   int product_index = 0;
